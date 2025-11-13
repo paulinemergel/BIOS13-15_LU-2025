@@ -1,0 +1,69 @@
+Windows PowerShell
+Copyright (C) Microsoft Corporation. Alle Rechte vorbehalten.
+
+Installieren Sie die neueste PowerShell für neue Funktionen und Verbesserungen! https://aka.ms/PSWindows
+
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git init
+Initialized empty Git repository in C:/Users/Wirbelwind/Pauline/BIOS13-15_GIT/.git/
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git remote add origin https://github.com/paulinemergel/BIOS15_Processing-Analysis-Biological-Data_LU2025.git
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git status
+On branch master
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        2025-11-05_exercises_measurement-meaning-in-biology.R
+
+nothing added to commit but untracked files present (use "git add" to track)
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git add .
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git status
+On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+        new file:   2025-11-05_exercises_measurement-meaning-in-biology.R
+
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git commit -m "First commit"
+[master (root-commit) cb10193] First commit
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 2025-11-05_exercises_measurement-meaning-in-biology.R
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git push origin master
+info: please complete authentication in your browser...
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 261 bytes | 65.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+remote:
+remote: Create a pull request for 'master' on GitHub by visiting:
+remote:      https://github.com/paulinemergel/BIOS15_Processing-Analysis-Biological-Data_LU2025/pull/new/master
+remote:
+To https://github.com/paulinemergel/BIOS15_Processing-Analysis-Biological-Data_LU2025.git
+ * [new branch]      master -> master
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git status
+On branch master
+nothing to commit, working tree clean
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git add .
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git commit -m "First commit"
+On branch master
+nothing to commit, working tree clean
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git push origin master
+Everything up-to-date
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT> git pull origin master
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+Unpacking objects: 100% (3/3), 941 bytes | 31.00 KiB/s, done.
+From https://github.com/paulinemergel/BIOS15_Processing-Analysis-Biological-Data_LU2025
+ * branch            master     -> FETCH_HEAD
+   cb10193..7775e9f  master     -> origin/master
+Updating cb10193..7775e9f
+Fast-forward
+ 2025-11-05_exercises_measurement-meaning-in-biology.R | 2 ++
+ 1 file changed, 2 insertions(+)
+PS C:\Users\Wirbelwind\Pauline\BIOS13-15_GIT>

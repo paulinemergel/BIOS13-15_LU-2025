@@ -1,0 +1,48 @@
+#Git Cheat Sheet (for windows CMD)
+# Max Weber - with the help of ChatGPT
+
+# Create a new git repository (in an already existing folder)
+git init
+
+# Connect git to GitHub repository
+git remote add origin <link to the github repository>
+# you will probably be asked for you name and email address, input the same ones you use on g
+
+#Stage file changes for commiting
+git add .
+
+#Show staged files
+git status # not necessary
+
+#Commit Changes
+git commit -m "Message"
+
+#Push to GitHub
+git push origin main # main is sometimes master
+
+# Pull changes from GitHub (overrides local copy with GitHub version)
+git pull origin main
+
+#Keeping a pdf file in a repo without tracking changes (for static pdf file):
+#Add file once
+	git add exercise_instructions.pdf
+	git commit -m "Add exercise instructions"
+#Tell Git to ignore future changes:
+	git update-index --assume-unchanged "Running Exercise Assignment 13.10.25/exercise_instructions.pdf"
+	#Prevents Git from noticing or staging future edits to that file. The file stays in the repo, just “frozen".
+#Allow changes again (undo)
+	git update-index --no-assume-unchanged "Running Exercise Assignment 13.10.25/exercise_instructions.pdf"
+#Only affecty local git, if pulled from github to another device, it must be run again
+
+
+# Usage of .gitignore
+# git will ignore all files that are in the repository that are listet in gitignore.
+ This is useful if you have files like pdfs or images, because git cannot keep track of their changes, so it will save a new copy with every commit and bloat your storage.
+*.zip
+*.pptx
+*.pdf
+*.docx
+# putting this into .gitignore in the main folder of your repository will make git ignore all zip files, powerpoint files pdf and word documents.
+
+
+

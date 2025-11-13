@@ -1,0 +1,17 @@
+GIT 
+
+master and main are different branches in git
+
+I am using master
+
+local and github branch must be the same
+
+
+.gitignore (textfile): 
+for files that I don't want git to see
+for files that git cannot work with (zip, pptx, pdf, docs, etc) => would just increase storage space
+you can reference whole subfolders, e.g. */Given Scripts and Lectures (gitignore)/
+
+
+You can also set git/r up in a way that it ONLY tracks .r-files
+
