@@ -449,6 +449,45 @@ In other words, a large sum of squares of the interaction indicates that the eff
 
 Therefore, we do NOT have to modify the model (remove the interaction). We keep everything in the model as is.
 
+| Column | Meaning |
+|----|----|
+| **Df** | Degrees of freedom for that factor (each factor with 2 levels → 1 df). |
+| **Sum Sq** | The sum of squares attributable to that source — the “variation explained” by that effect. |
+| **Mean Sq** | The average sum of squares (Sum Sq ÷ Df). |
+| **F value** | Test statistic comparing model variance (for that factor) to residual variance. |
+| **Pr(\>F)** | p-value — probability that the observed F is due to chance (under H₀: no effect). |
+
+| Row | Interpretation |
+|----|----|
+| **LarvalHost** | Tests whether mean DevelopmentTime differs between larvae reared on *Barbarea* vs *Berteroa* **on average**, ignoring maternal host. |
+| **MaternalHost** | Tests whether mean DevelopmentTime differs between offspring from mothers fed on *Barbarea* vs *Berteroa*, **on average**, ignoring larval host. |
+| **LarvalHost:MaternalHost** | Tests whether the **effect of larval host depends on the maternal host** — i.e., whether the difference between hosts changes depending on the mother’s host. This is the *interaction*. |
+| **Residuals** | Unexplained variance — how much variation remains after accounting for those effects. |
+
+In your data, all three terms were significant in the regression summary — so in the ANOVA table you’ll also see:
+
+-   **LarvalHost: p \< 0.001** → Strong evidence that larval host species affects development time.
+
+-   **MaternalHost: p \< 0.001** → Maternal host also has a significant effect.
+
+-   **Interaction: p \< 0.001** → The effect of larval host depends on maternal host (not parallel differences).
+
+A two-way ANOVA revealed significant effects of **larval host** (F₁,₂₈₃ ≈ …, p \< 0.001) and **maternal host** (F₁,₂₈₃ ≈ …, p \< 0.001) on development time.\
+
+There was also a **significant interaction** between larval and maternal host (F₁,₂₈₃ ≈ …, p \< 0.001), indicating that the effect of larval host on development time depended on the maternal host species.
+
+anova(model) versus summary(model):
+
+-   ANOVA (from `anova(model)`) tells you **which effects are significant**.
+
+-   The **`summary(model)`** tells you **how large** and **in what direction** those effects are (the estimates).
+
+-   Together, they tell the full story:
+
+    -   *Both larval and maternal hosts significantly affect development time.*
+
+    -   *The combination of both Berteroa hosts leads to the longest development time.*
+
 #### Summary Table
 
 ```{r}
@@ -480,14 +519,14 @@ The interactive effect shows a difference of 2.2 days to the intercept.
 $R^2 = 0.77$ =\> 77% of the variance in the data is explained by the groups.
 
 | Term | Estimate | Meaning (in your context) |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | (Intercept) | 21.6961 | Mean development time when **LarvalHost = Barbarea** *and* **MaternalHost = Barbarea** |
 | LarvalHostBerteroaLH | +5.3039 | If larvae feed on **Berteroa** instead of Barbarea, development time increases by **≈5.30 days**, *when the maternal host was Barbarea*. |
 | MaternalHostBerteroaMH | +1.8167 | If the **mother fed on Berteroa** instead of Barbarea, offspring development time increases by **≈1.82 days**, *when larvae are reared on Barbarea*. |
 | LarvalHostBerteroaLH : MaternalHostBerteroaMH | +2.2025 | When **both** the larval and maternal hosts are Berteroa, development time increases by an **additional ≈2.20 days** beyond the sum of the two main effects. |
 
 | LarvalHost | MaternalHost | Formula | Predicted Mean (days) |
-|----|----|----|----|
+|------------------|------------------|------------------|------------------|
 | Barbarea | Barbarea | (Intercept) | **21.70** |
 | Berteroa | Barbarea | (Intercept) + LarvalHostBerteroaLH | **21.70 + 5.30 = 27.00** |
 | Barbarea | Berteroa | (Intercept) + MaternalHostBerteroaMH | **21.70 + 1.82 = 23.51** |
@@ -495,7 +534,7 @@ $R^2 = 0.77$ =\> 77% of the variance in the data is explained by the groups.
 
 ## Interpretation in Plain Language
 
--    **Baseline group:** Larvae and mothers both from *Barbarea* → \~21.7 days.
+-   **Baseline group:** Larvae and mothers both from *Barbarea* → \~21.7 days.
 
 -   **Larval host effect:** Switching larvae to *Berteroa* (from Barbarea) slows development by \~5.3 days if the mother fed on Barbarea.
 
