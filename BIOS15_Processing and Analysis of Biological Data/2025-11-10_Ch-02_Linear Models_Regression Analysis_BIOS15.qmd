@@ -1,0 +1,366 @@
+---
+title: "Linear Models (BIOS15)"
+author: "Pauline"
+format: html
+---
+
+# 2025-11-10_Ch. 2_Regression Analysis
+
+"The aim of regression analysis is to estimate the linear relationship between a response variable (or “dependent variable”) and one or more predictor variables (“independent variables”). The most common form of regression analysis is so-called ordinary least-square (OLS) regression, in which the regression parameters are estimated so as to minimize the square deviations of the data points from the estimated regression line. The deviations are termed residuals, and are assumed to be normally distributed."
+
+## I - Overview: Linear models fitted to simulated data
+
+### Simulate data and a model
+
+```{r}
+# Simulate data from the same linear model that we will eventually fit to the data
+set.seed(85)
+x = rnorm(n=200, mean=10, sd=2) 
+y = 0.4*x + rnorm(200, 0, 1)
+
+plot(x, y, las=1,
+     xlab="Leaf length (mm)",
+     ylab="Leaf width (mm)")
+```
+
+### Parameter estimates (intercept, slope) and residuals
+
+```{r}
+# Save fitted model in object m 
+m = lm(y~x)
+
+
+# Extract model coefficients
+cf = m$coeff
+cf
+# Other components that can be extracted from the model: str(model)
+#str(m)
+
+
+# Obtain predicted model values with []
+# => Parameter estimates intercept & slope
+# Compute predicted values
+# Illustrate residuals with segments()
+predvals = cf[1] + cf[2]*x
+#predvals    # contains 200 values
+
+par(mfrow=c(1,2)) 
+plot(x, y, las=1,
+xlab="Leaf length (mm)", 
+ylab="Leaf width (mm)")
+abline(m)
+segments(x, y, x, predvals) 
+hist(residuals(m), xlab="", las=1)
+```
+
+### Checking that model assumptions are met (apart from residuals)
+
+```{r}
+par(mfrow=c(2,2))
+plot(m)
+```
+
+### Scatterplot with fitted regression line
+
+Keep the regression line within the data range using lines() function. We used abline() above, but then the regression line extended beyond our data range.
+
+```{r}
+newx = seq(min(x), max(x), length.out=200) 
+predy = cf[1] + cf[2]*newx
+
+plot(x, y, las=1,
+xlab="Leaf length (mm)",
+ylab="Leaf width (mm)") 
+lines(newx, predy)
+```
+
+### Summary
+
+How do we interpret the results from summary("model")?
+
+-   Quantiles of the residual distribution
+
+    -   Median is close to zero, the 1st and 3rd quartiles (25% and 75% of the distribution, respectively) are symmetrical, and the min and max values are nearly symmetrical too\
+        =\> residuals are fine and correspond to the simulated, normally distributed data
+
+-   Model parameter estimates, their standard errors (SEs), test statistic (t) and the P-value
+
+    -   Sample size n is the denominator of the expression for the SE\
+        =\> larger sample size = smaller SE = greater t-value
+
+    -   P-value is the probability of observing the observed value of the test statistic given that the null hypothesis is true == the probability that we would have obtained our results by chance
+
+        -   P -value is obtained by comparing our observed test statistic t to its known distribution. Since t increases with sample size, it follows that when the sample size increases, anything will at some point be statistically significant.
+
+        -   However, P-values do provide a “quick and dirty” way of assessing statistical support, and can help guide our interpretation of the results
+
+    -   Interpretation of the results needs to be done in light of the parameter estimates, their units, and their consequences within the context of the analysis/study.
+
+```{r}
+summary(m)
+```
+
+### Optional Exercise on page 5
+
+Use non-parametric bootstrapping to derive a standard error for the slope of the linear regression above. To do so, produce a data frame holding the x and y values, sample from this dataset (with replacement), fit the model, and save each estimate for the slope of y on x. The samples will give the sampling distribution for the slope, and its standard deviation will provide an estimate of the standard error.
+
+```{r}
+        ### NOT DONE YET ###
+```
+
+### Dataframe
+
+```{r}
+# data.frame() creates data frames
+df = data.frame(x, y) 
+head(df)
+
+```
+
+### Interpretation of results (cont.)
+
+The regression slope = ratio of the covariance between y and x, and the variance in x:
+
+**cov(y,x)/var(x)**
+
+Regression slopes are carry the units of both the response and the predictor variables. In our example, mm/mm.
+
+When we want to report this in the text, we generally also want to report the SE,\
+i.e. *slope* = 0.43 +/- 0.04 *mm*/*mm*. This means that the response variable (y) increaes by 0.43 *mm* per *mm* increase in the predictor (x). The small standard error (relative to the slope estimate) directly indicates the strong statistical support.
+
+```{r}
+# cov()
+# var()
+
+rslope = cov(x,y)/var(x)
+rslope
+```
+
+### Further interpretation possibilities
+
+To facilitate further interpretation, we can also report the consequences of a realistic change in the predictor variable. Let’s say that we want to know how much y changes for a one standard deviation change in x. To do so we compute the difference in the predicted values when x is at its mean (second term below), and when x is at its mean + one standard deviation (first term below). Why can we ignore the intercept here?
+
+```{r}
+(cf[2]*(mean(x) + sd(x))) - (cf[2]*mean(x))
+```
+
+Here, we could write in the results section that ‘In the study population, leaf width increased by 0.86 mm per standard deviation increase in leaf length’.
+
+As a special case, a regression where both the response and predictor variable are natural log-transformed will have a slope interpretable as an elasticity, which describes the % change in the response per % change in the predictor. This is another example of the nice proportional properties of the natural log.
+
+### r2
+
+We modeled a simple, univariate regression =\> r2 == the square of the Pearson correlation coefficient r between the response and the predictor.
+
+```{r}
+# cor
+r2 = cor(x,y)^2
+r2
+```
+
+The r2 of our model is 0.431, which means that 43.1% of the variance in y is explained by x. In general, it is often nice to report the r2 directly as a percent (i.e. ×100). To understand why the r2 gives the % variance explained, note that the r2 can be computed as the variance in the predicted values y-hat, divided by the total variance in the response variable V(y).
+
+```{r}
+cf[1] # intercept
+cf[2] # slope
+y_hat = cf[1] + cf[2]*x 
+var(y_hat)
+
+var(y_hat)/var(y)
+```
+
+### Alternative to r2
+
+Another way to compute the variance explained by a predictor is V (x) = βx\^2 \* σx\^2, where βx is the parameter estimate (regression slope) for predictor x, and σx\^2 is the variance of the predictor.
+
+```{r}
+cf[2]^2*var(x)
+```
+
+------------------------------------------------------------------------
+
+## II - Main exercise: fitting a linear regression to real data
+
+-   Use a dataset with a continuuous response and predictor variable
+
+    -   bird-allometry.csv
+
+    -   contains body mass and brain mass for males and females of different bird species the scaling of parts of a body with body size is expected to follow a power- law relationship on the form y = axb, which can be linearized through the logarithmic transformation log(y) = log(a) + b × log(x)
+
+    -   Allometry example: A mouse's heart beats much faster than an elephant's, even though elephants are much larger, illustrating an allometric relationship between heart rate and body size.
+
+-   Fit a simple linear regression, interpret the results, produce a nice figure including the fitted regression line, and write simple methods and results presenting the analysis and results.
+
+### Dataset
+
+```{r}
+getwd()
+birds = read.csv("datasets/bird_allometry.csv") 
+head(birds)
+
+# We will estimate the allometric slopes and intercepts for the brain-body scaling, and ask whether these are similar in males and females.
+# Extract data for males and females from the dataset: 
+
+males = birds[birds$Sex=="m",] 
+females = birds[birds$Sex=="f",]
+```
+
+### Fit linear model to log-transformed brain- and body-sizes
+
+```{r}
+mm = lm(log(brain_mass)~log(body_mass), data=males) 
+mf = lm(log(brain_mass)~log(body_mass), data=females)
+```
+
+### Checking model fit
+
+```{r}
+# Check, if residuals are OK
+# (for males)
+
+mcf = mm$coeff
+fcf = mf$coeff
+mcf
+fcf
+
+# Compute predicted values
+mpredvals = mcf[1] + mcf[2]*log(males$body_mass)
+
+#plot(log(males$body_mass), log(males$brain_mass))
+
+par(mfrow=c(1,2)) 
+plot(log(males$body_mass), log(males$brain_mass), las=1,
+    ylab="Brain mass (log g)",
+    xlab="Body mass (log g)")
+abline(mm)
+# Illustrate residuals with segments()
+segments(log(males$body_mass), log(males$brain_mass), log(males$body_mass), mpredvals) 
+
+hist(residuals(mm), xlab="", las=1)
+
+### Can you find out from the data which are the species that fall outside the main cloud (e.g. on the upper right)?
+
+          ## HOW to code that?
+        
+
+# 
+par(mfrow=c(2,2))
+plot(mm)
+```
+
+#### Summary MALES
+
+```{r}
+summary(mm) # males
+```
+
+#### Summary FEMALES
+
+```{r}
+summary(mf) # females
+```
+
+-   Allometric intercept
+    -   here: ca. 1.9
+    -   varies across taxa and is sometimes of interest when we are comparing allometric relationships across taxa
+-   Allometric slope
+    -   here:
+        -   Tells us about how brain size scales with body size.
+        -   Males:\
+            The slope is much less than 1, which means that the scaling is less than proportional. The value 0.55 means that brain size increases by 5.5% per 10% increase in body size.\
+            R\^2 = 0.835 means that body mass explained 83.5% of the variance in brain mass.
+        -   Females:\
+            The scaling relationship is similar but a little bit steeper for females: brain size increases by 5.7% per 10% increase in body size. Based on the standard errors of the slopes, the difference appears statistically supported.
+            -   What kind of analysis could we do to directly estimate the difference in slope between males and females?
+
+### Analysis to estimate the difference in slope between males and females
+
+```{r}
+
+```
+
+### RESULTS (Scatterplot)
+
+#### Pauline's version
+
+```{r}
+newx.m = seq(min(log(males$brain_mass)), max(log(males$body_mass)), length.out=100)#nrow(males)) 
+          ### Why does Østein put length.out=100 (see below)
+predy.m = mcf[1] + mcf[2]*newx.m
+
+newx.f = seq(min(log(females$brain_mass)), max(log(females$body_mass)), length.out=100)#nrow(females))
+predy.f = fcf[1] + fcf[2]*newx.f
+
+
+plot(log(males$brain_mass), log(males$body_mass), col="blue",las=1,
+     ylab="Brain mass (log g)",
+     xlab="Body mass (log g)")
+# Females
+points(log(females$brain_mass), log(females$body_mass), col="pink")
+lines(newx.m, predy.m, lwd=2)#, col="blue")
+lines(newx.f, predy.f, lwd=2)#, col="pink")
+
+      ### WHY DO the lines NOT show up?? ###
+```
+
+#### Øystein's version
+
+```{r}
+xx = seq(min(log(males$body_mass)), max(log(males$body_mass)), 
+         length.out=100)
+xxf = seq(min(log(females$body_mass)), max(log(females$body_mass)), 
+         length.out=100)
+
+yy = mm$coef[1] + mm$coef[2]*xx
+yyf = mf$coef[1] + mf$coef[2]*xxf
+
+plot(log(males$body_mass), log(males$brain_mass), 
+     xlab="Body mass (log g)",
+     ylab="Brain mass (log g)",
+     las=1, pch=21, col="black", bg="lightblue")
+points(log(females$body_mass), log(females$brain_mass),
+       pch=21, col="black", bg="firebrick")
+lines(xx, yy, lwd=2)
+lines(xxf, yyf, lwd=2)
+legend("bottomright", pch=c(16,16), 
+       col=c("lightblue", "firebrick"),
+       legend=c("Males", "Females"))
+```
+
+### Outliers
+
+Can you find out from the data which are the species that fall outside the main cloud (e.g. on the upper right)?
+
+```{r}
+        ### unsure how to do this...
+```
+
+### Written section
+
+[Analysis Method]{.underline}\
+We expected brain size to scale with body size according to a power-law relationship on the form brainmass = a × bodymassb. We linearized the expected power relationship through the logarithmic transformation log(brainmass) = log(a) + b × log(bodymass), and then fitted a linear regression model to the data. To assess whether the allometric slope (b) differs between the sexes, we analysed data for males and females separately.
+
+[Results]{.underline}\
+Brain size scaled allometrically with body size (Fig. 1). In males, brain size increased by 5.5% per 10% increase in body mass (allometric slope = 0.55±0.010), and body mass explained 83.5% of the variance in brain mass. The allometric slope was slightly steeper in females (0.57 ± 0.012).
+
+------------------------------------------------------------------------
+
+## III - How error in x- and y-variables affect the slope
+
+The standard linear model assumes that the predictor variable (=x) is measured without error. When there is measurement error, this can lead to a bias in the estimated slope. Simulate data with measurement error in the predictor, and produce a plot showing the effect on the estimated slope. As always with programming exercises, start by performing the necessary operations once, before building loops or functions. Here, you can start by simulating some data, and fit the model with no measurement error. Then, add some error, and see what happens to the slope estimate. For a simple model like this, the expected attenuation bias (downward bias) in the slope can be estimated by the reliability ratio K = 1 − σme/σx where σme is the measurement error variance and σx is the variance in the predictor x. We can thus obtain a corrected slope as β′ = β/K Try to correct your estimated slopes in this way, and a produce a plot showing both the estimated and the corrected slope connected by line segments.
+
+### Simulate data
+
+```{r}
+# sample vs sampling distribution
+```
+
+### Predictor value with measurement error
+
+### How slope is affected by measurement error
+
+```{r}
+
+```
+
+?? sampling distribution for standard error otherwise SD for actual values
