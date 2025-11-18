@@ -1,5 +1,4 @@
 *.zip
 *.pptx
-*.pdf
 *.docx
 */Given Scripts and Lectures (gitignore)/

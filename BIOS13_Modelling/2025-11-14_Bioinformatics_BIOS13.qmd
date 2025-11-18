@@ -1,0 +1,301 @@
+---
+title: "2025-11-14_Bioinformatics_BIOS13"
+author: "Pauline"
+format: html
+editor: visual
+---
+
+# Bioinformatics
+
+## \* = RUN
+
+## Packages
+
+-   seqinr: <https://cran.r-project.org/web/packages/seqinr/seqinr.pdf> )
+
+```{r}
+#| echo: false  ## The echo: false option disables the printing of code (only output is displayed)
+#| eval: false   ## do not run code
+
+install.packages("seqinr")
+```
+
+#### \*
+
+```{r}
+#| echo: false
+library(seqinr)
+```
+
+## Data
+
+Download the human mitochondrial sequence ‘NC_012920’ from the genbank database ( <https://www.ncbi.nlm.nih.gov/genbank/> ). Save it as a ‘fasta’ file. Alternatively, download NC_012920.fasta from the course webpage.
+
+The actual sequence is stored in ‘mito_fasta\$NC_012920.1’. As you may see, it is a vector of characters \[‘g’,’a’,’t’,’c’…\], corresponding to the DNA nucleotides. You may want to extract the sequence vector into a separate variable.
+
+#### \*
+
+```{r}
+mito_fasta <- read.fasta('datasets/NC_012920.fasta')
+# print(mito_fasta)
+
+mito_seq <- mito_fasta$NC_012920.1
+
+mito_seq <- as.data.frame(mito_seq)
+mito_seq$x <- as.character(mito_seq$x)
+head(mito_seq)
+
+nrow(mito_seq)
+```
+
+## N°4_Percentage: G, C, A, T
+
+Write a function *nucleo_content* that takes a sequence as input (in form of a vector of characters), calculates the proportions of the G, C, A and T nucelotides and prints the result according to:
+
+G : …%\
+C : …%\
+A : …%\
+T : …%
+
+Test your function, for example with a simple input:\
+\> nucleo_content(c('a','g','c'))\
+G : 33.33333%\
+C : 33.33333%\
+A : 33.33333%\
+T : 0%
+
+### nucleo_content( )
+
+#### Word-/Pseudocode
+
+Our data is a (now) a dataframe of "characters" g, c, a, t. The are in a specific sequence (though that does not matter for now).
+
+We want to calculate how many times g, c, a, and/or t occurs in the data. We want to be able to choose \>= one "character" (e.g. g and c) and get an output for that.
+
+nucleo_content \<- function(of four categories a, b, c, d) {
+
+select each category individually
+
+summarize the amount of that category (i.e. how many time g occurs) and divide by total amount of all characters == nrow(mito_seq)
+
+OR: print result for g, c, a, t but only calculate result for e.g. c('a','g','c')
+
+#### R-Code_Various approaches
+
+```{r}
+## MANUAL approach
+## G C A T and "all"
+g <- sum(mito_seq$x=="g")
+c <- sum(mito_seq$x=="c")
+a <- sum(mito_seq$x=="a")
+t <- sum(mito_seq$x=="t")
+all <- sum(g, c, a, t)
+r.manual <- c(g,c,a,t,all)
+print(r.manual)
+
+for(i in r.manual){
+  per.manual <- r.manual/all
+  print(per.manual)
+}
+r.manual
+per.manual
+
+
+
+## BASIC
+## function and loop OVER CHARACTERS
+nucleo_content <- function(x){
+  for(letter in unique(mito_seq)){
+  print(letter)
+  }
+}
+nucleo_content()
+    ## this function prints all unique letters of our data "mito_seq"
+
+
+
+## Function expanded
+seq_vector <- unique(mito_seq$x)
+print(seq_vector)
+# => ORDER == "g" "a" "t" "c" "n"
+sum(mito_seq == "g")
+
+nucleo_content <- function(seq_vector){
+  a <- NULL
+  for(letter in unique(mito_seq)){
+  a <- sum(mito_seq == letter)
+  }
+  print(a)
+}
+nucleo_content()
+nucleo_content(c("a"))
+nucleo_content(c("g"))
+    ## ?? How is the number 3338 being calculated ??
+# compare to: 
+r.manual
+per.manual
+
+
+
+## length(mito_seq[mito_seq$x == "a", ]) = gives you the number of "a"s in dataframe
+seq_vector <- unique(mito_seq$x)
+
+nucleo_content <- function(seq_vector){
+  percentage <- NULL
+  for(letter in unique(mito_seq)){
+  percentage <- length(mito_seq[mito_seq$x == letter, ])/nrow(mito_seq)
+  print(percentage)
+  }
+}
+nucleo_content(c("a"))
+# compare to:
+per.manual
+    ## result do NOT match
+    ## function does not really work anyways
+
+
+
+## 
+nucleo_content <- function(seq_vector){
+  per <- 0
+  per <- c(
+    per.G <- length(mito_seq[mito_seq$x == "g", ])/nrow(mito_seq),
+    per.C <- length(mito_seq[mito_seq$x == "c", ])/nrow(mito_seq),
+    per.A <- length(mito_seq[mito_seq$x == "a", ])/nrow(mito_seq),
+    per.T <- length(mito_seq[mito_seq$x == "t", ])/nrow(mito_seq)
+  )
+  # Print the results
+  #for (n in names(per)) {
+  #  cat(n, ":", per[n], "%\n")
+  #}
+}
+r <- nucleo_content(c("g","a"))
+r
+
+
+## LIST
+## why a list?
+seq_vector
+
+nucleo_content <- function(a,b,c,d) {
+  result <- list(
+    per.G  = a,
+    per.C = b,
+    per.A  = c, 
+    per.T = d
+  )
+  
+  return(result)
+}
+nucleo_content(1,2,3,4)
+```
+
+#### \* Solution
+
+```{r}
+#per.manual
+
+nrow(mito_seq)
+
+nucleo_content <- function(seqv) {
+  # Print out the relative frequencies of all nucleotids
+  Gsum <- sum(seqv=='g')
+  Csum <- sum(seqv=='c')
+  Asum <- sum(seqv=='a')
+  Tsum <- sum(seqv=='t')
+  cat('G : ',Gsum/nrow(seqv)*100,'%\n',sep='')
+  cat('C : ',Csum/nrow(seqv)*100,'%\n',sep='')
+  cat('A : ',Asum/nrow(seqv)*100,'%\n',sep='')
+  cat('T : ',Tsum/nrow(seqv)*100,'%\n',sep='')
+  # no return value
+}
+
+nucleo_content(mito_seq)
+```
+
+------------------------------------------------------------------------
+
+## N°5_Complementary sequence
+
+Write another function create_complement that takes a sequence as input and returns the complementary sequence (see lecture notes, remember to read ‘backwards’).
+
+Hints:\
+Logical indexing is useful here. For example: v\[v==1\] \<- 2 will change all elements equal to 1 in vector v to the value 2. To reverse a vector v you can use v \<- v\[length(v):1\].
+
+-   Test your function, for example, do this:\
+    \> create_complement(c('a','c','g','t'))\
+    \[1\] "a" "c" "g" "t"
+
+### create_complement( )
+
+#### Word-/Pseudocode
+
+mito_seq = input
+
+reverse(mito_seq) = output
+
+=\> reverse input vector via: v \<- v\[length(v):1\]
+
+#### \* R-Code (FINAL)
+
+**Important**\
+I initially coded:\
+seq\[seq=="c"\] \<- "g"\
+seq\[seq=="g"\] \<- "c"\
+seq\[seq=="t"\] \<- "a"\
+seq\[seq=="a"\] \<- "t"\
+And I always got a consistenly WRONG result. Why? Because all the "c" are replaced with "g", then all the "g" (including the ones that were "c" originally) are replaced with "c" again. Etc. This effectively loses the original "c" information, so the swap doesn’t work properly.
+
+```{r}
+is.data.frame(mito_seq)
+mito_seq <- as.vector(mito_seq)
+is.vector(mito_seq)
+length(mito_seq)
+
+create_complement <- function(seq){
+  reverse <- character(length(seq)) # you MUST pre-allocate reverse
+  for(i in length(seq):1){ ## use x from function(x) instead of vectorname
+    reverse[-i+length(seq)+1] <- seq[i]
+  }
+  reverse <-ifelse(reverse == "a", "t",
+            ifelse(reverse == "t", "a",
+            ifelse(reverse == "c", "g",
+            ifelse(reverse == "g", "c", 
+            ifelse(reverse == "n", "n", reverse)))))
+  print(reverse)
+  return(reverse) # print must appear before return
+}
+
+test <- c("g", "a", "t", "c", "a")
+test.rev <- create_complement(test)
+test.rev # should be t, g, a, t, c
+## => test output looks good :-)
+
+mito_seq_rev <- create_complement(mito_seq)
+names(mito_seq_rev) <- c("x")
+
+# Comparison
+# INPUT
+head(mito_seq$x, 5) # = g(first), a, t, c, a, ...
+# OUTPUT
+tail(mito_seq_rev$x, 5) # correct is: ..., t, g, a, t, c(last)
+## => g switched for g?!
+```
+
+## N°6_Proportions of the complementary
+
+Write a script (in a separate file) that:
+
+a\. Clears all variables: *rm(list=ls())*
+
+b\. Loads the mitochondrial sequence, as above
+
+c\. Prints the length of the sequence
+
+d\. Calls *nucleo_content* (function from N°4) to print the proportions of the G, C, A and T nucelotides.
+
+e\. Calls *create_complement* (function from N°5) to create the complementary sequence and then n*ucleo_content* to print its nucelotide proportions.
+
+Was the proportions of the complementary as expected (what did you expect)?
+
+### Script \[external\]

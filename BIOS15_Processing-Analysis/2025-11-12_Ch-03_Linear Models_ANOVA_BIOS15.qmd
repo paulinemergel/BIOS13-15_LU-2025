@@ -519,14 +519,14 @@ The interactive effect shows a difference of 2.2 days to the intercept.
 $R^2 = 0.77$ =\> 77% of the variance in the data is explained by the groups.
 
 | Term | Estimate | Meaning (in your context) |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | (Intercept) | 21.6961 | Mean development time when **LarvalHost = Barbarea** *and* **MaternalHost = Barbarea** |
 | LarvalHostBerteroaLH | +5.3039 | If larvae feed on **Berteroa** instead of Barbarea, development time increases by **≈5.30 days**, *when the maternal host was Barbarea*. |
 | MaternalHostBerteroaMH | +1.8167 | If the **mother fed on Berteroa** instead of Barbarea, offspring development time increases by **≈1.82 days**, *when larvae are reared on Barbarea*. |
 | LarvalHostBerteroaLH : MaternalHostBerteroaMH | +2.2025 | When **both** the larval and maternal hosts are Berteroa, development time increases by an **additional ≈2.20 days** beyond the sum of the two main effects. |
 
 | LarvalHost | MaternalHost | Formula | Predicted Mean (days) |
-|------------------|------------------|------------------|------------------|
+|----|----|----|----|
 | Barbarea | Barbarea | (Intercept) | **21.70** |
 | Berteroa | Barbarea | (Intercept) + LarvalHostBerteroaLH | **21.70 + 5.30 = 27.00** |
 | Barbarea | Berteroa | (Intercept) + MaternalHostBerteroaMH | **21.70 + 1.82 = 23.51** |

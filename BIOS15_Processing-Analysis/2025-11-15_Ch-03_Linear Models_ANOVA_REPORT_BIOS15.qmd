@@ -1,0 +1,458 @@
+---
+title: "Report 1: ANOVA (BIOS15)"
+author: "Pauline Mergel"
+date: 2025-11-14
+format: 
+  pdf: ###### html OR pdf - depending on desired output format ######
+    theme: flatly
+    title-block-banner: true
+    #title-align: center
+    #title-block-banner-subtitle: "Subtitle"
+    include-in-header: preamble.tex ## if PDF "= output "turn" this on, so that table captions are left aligned; I created a txt doc and saved it as .tex (!)
+pdf: default
+---
+
+```{=html}
+<style>
+table caption {
+  text-align: left;
+}
+</style>
+```
+
+```{r}
+#| echo: false
+#| eval: false
+
+## PACKAGES 
+install.packages(c("tidyverse", "emmeans", "ggplot2", "knitr", "patchwork", "tinytex"))
+
+tinytex::install_tinytex()N
+```
+
+```{r setup}
+#| include: false
+#| warning: false
+
+library(tidyverse)
+library(emmeans)
+library(ggplot2)
+library(knitr)
+library(patchwork)
+```
+
+# Maternal and larval host plant affect the development and the adult weight of the butterfly *Pieris rapae*
+
+## Introduction
+
+::: {style="text-align: justify;"}
+The butterfly *Pieris rapae* deposits its eggs on a variety of host plants. Two naturally occuring host plant species are *Barbarea vulgaris* and *Berteroa incana*. They differ in their nitrogen content. This is of importance since nitrogen content can affect larval rearing rates. *Barbarea vulgaris* has a higher nitrogen content than *Berteroa incana* and therefore egg deposition on *Barbarea vulgaris* may lead to a faster larval developmental times and/or a subsequent higher adult weight. In addition, the host plant the maternal butterfly was reared on may affect the developmental time and adult weight of the next generation.
+
+In this analysis, I tested whether the developmental time as well as adult weight of *Pieris rapae* was affected by the maternal and the larval host plant independently, or whether their combination produced a unique effect.
+:::
+
+## Analysis methods
+
+::: {style="text-align: justify;"}
+I expected developmental time to be fastest and adult weight to be largest when both maternal and larval host plant were *Barbarea vulgaris*. I fitted two-way ANOVAs to the data to assess whether there is an interaction effect between larval and maternal host plant on the developmental time of the larva, as well as the subsequent adult weight.
+
+Formula for two-way ANOVA:
+
+$Y_ijk = mu + alpha_i + beta_j + (alpha*beta)_ij + epsilon_ijk$
+
+with: $alpha =$ larval host plant; $beta =$ maternal host plant
+
+The data met most of the assumptions for a two-way ANOVA (two categorical and one dependent continuous variable, independence between and within each group, homogeneity of variances, no siginificant outliers). The residuals of our developmental model were slightly skewed instead of fully normally distributed. However, since the sample size was $= 180$ per group ($n > 30$), the assumptions were met overall.
+:::
+
+```{r}
+#| echo: false
+#| include: false
+
+## LOAD DATA (butterflies.csv)
+
+dat = read.csv("datasets/butterflies.csv")
+names(dat)
+print(dat)
+unique(dat$LarvalHost)
+unique(dat$MaternalHost)
+unique(dat$DevelopmentTime)
+```
+
+```{r}
+#| echo: false
+#| eval: false
+#| include: false
+
+## MODIFY data
+
+# paste0( )
+# is used to concatenate (join) strings together — without any spaces between them
+# it’s a simplified version of the more general paste() function.
+
+
+      ### RUN ONLY ONCE!!! 
+      ### because it modifies (adds to) column names each time you run it
+
+
+dat$MaternalHost = paste0(dat$MaternalHost, "MH")
+dat$LarvalHost = paste0(dat$LarvalHost, "LH")
+unique(dat$LarvalHost)
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+#### ANOVA MODEL (1) = development time
+
+# model
+m.dev <- lm(DevelopmentTime ~ LarvalHost * MaternalHost, data = dat)
+
+# Residuals for m.dev
+m.dev.res <- m.dev$residuals
+# qqplot
+qqnorm(m.dev.res)
+qqline(m.dev.res, col = "red")
+# Hist
+hist(m.dev.res, main = "Distribution of residuals: Model 'Development Time'",
+     xlab="")
+# => slightly skewed
+
+
+# Group means
+means.dev = tapply(dat$DevelopmentTime, list(dat$MaternalHost, dat$LarvalHost), mean)
+means.dev
+
+# Boxplot
+boxplot(DevelopmentTime ~ LarvalHost * MaternalHost, data = dat,
+        cex.axis = 0.5, 
+        las = 1, xlab = "", ylab = "Development Time"
+        )
+# Boxplot v2
+ggplot(dat) +
+  aes(x = LarvalHost, y = DevelopmentTime, fill = MaternalHost) +
+  geom_boxplot()
+
+# --------------------
+# --------------------
+
+## ANOVA Table
+anova.dev <- anova(m.dev)
+anova.dev
+
+# --------------------
+
+## SUM OF SQUARES
+SStotal <- sum(anova.dev$`Sum Sq`) 
+SStotal # = total sum of squares= ca 4378.9
+
+# Proportion of variance explained by
+anova.dev$`Sum Sq`[1]/SStotal
+# 1) Larval Host 2809.15/4378.9 => 64% => this factor accounts for the majority of variation in development time. It is the dominant driver of differences
+anova.dev$`Sum Sq`[2]/SStotal
+# 2) Maternal Host 496.4378.9 => 11% => meaningful but smaller share of variation
+anova.dev$`Sum Sq`[3]/SStotal
+# 3) Interaction = 80.80/4378.9 => 1.8% => small but non-negligible interaction
+anova.dev$`Sum Sq`[4]/SStotal
+# 4) Residuals = 992.05/4378.9 => 23% => most of the remaining variation is unexplained noise or individual-level differences (value within range for biological data)
+
+# --------------------
+
+## Mean Squares (MS) and F-values: signal-to-noise strength
+## F = (variance explained by factor)/residual variance
+
+anova.dev$`Mean Sq`[4] # Residual MS = 3.51 = "NOISE LEVEL"
+
+# Comparing MS values of factors to the noise level
+# Larval Host
+anova.dev$`Mean Sq`[1]
+anova.dev$`F value`[1]
+# => Differences between larval host groups are very large compared to within-group variability
+
+# Maternal Host
+# => still a strong group difference, but larval host had much larger effect
+
+# Interaction
+# => modest effect, but the way larval host influences development time depends somewhat on the maternal host
+
+# ===> Larval host = strongest predictor (explains 64% of all variability in development time; effect size is very large; the F-ratio indicates the groups differ sharply)
+
+# --------------------
+# --------------------
+
+## SUMMARY
+
+# Estimates
+summary.dev <- summary(m.dev)
+summary.dev
+
+# Effect size(s)
+sum(summary.dev$coefficients[2:4])+summary.dev$coefficients[1]
+sum(summary.dev$coefficients[2])+summary.dev$coefficients[1]
+sum(summary.dev$coefficients[3])+summary.dev$coefficients[1]
+sum(summary.dev$coefficients[2:4])/summary.dev$coefficients[1]
+
+# Group means
+model.tables(aov(m.dev), type = "means")
+
+# r2
+summary.dev$r.squared # 77.3%
+```
+
+```{r}
+#| echo: false
+#| include: false
+
+#### ANOVA MODEL (2) = adult weight
+
+# model
+m.wei <- lm(AdultWeight ~ LarvalHost * MaternalHost, data = dat)
+
+# Residuals for m.wei
+m.wei.res <- m.wei$residuals
+# qqplot
+qqnorm(m.wei.res)
+qqline(m.wei.res, col = "red")
+# Hist
+hist(m.wei.res, main = "Distribution of residuals: Model 'Adult Weight'",
+     xlab="")
+# => normally distributed = GOOD
+
+
+# Group means
+means.wei = tapply(dat$AdultWeight, list(dat$MaternalHost, dat$LarvalHost), mean)
+means.wei
+
+# Boxplot
+boxplot(AdultWeight ~ LarvalHost * MaternalHost, data = dat,
+        cex.axis = 0.5, 
+        las = 1, xlab = "", ylab = "Adult Weight"
+        )
+# Boxplot v2
+ggplot(dat) +
+  aes(x = LarvalHost, y = AdultWeight, fill = MaternalHost) +
+  geom_boxplot()
+# => less difference than in model m.dev
+
+# --------------------
+# --------------------
+
+## ANOVA Table
+anova.wei <- anova(m.wei)
+anova.wei
+
+# --------------------
+
+## SUM OF SQUARES
+SStotal.wei <- sum(anova.wei$`Sum Sq`) 
+SStotal.wei # = total sum of squares= ca 38,861
+
+# Proportion of variance explained by
+anova.wei$`Sum Sq`[1]/SStotal.wei
+# 1) Larval Host =  33% => this factor accounts for meaningful variation in adult weight
+
+anova.wei$`Sum Sq`[2]/SStotal.wei
+# 2) Maternal Host = 0.019% => negligible
+
+anova.wei$`Sum Sq`[3]/SStotal.wei
+# 3) Interaction = 80.80/4378.9 => 0.8% => play minor role
+
+anova.wei$`Sum Sq`[4]/SStotal.wei
+# 4) Residuals = 992.05/4378.9 => 65% => MAJORITY (!!!) of the variation is unexplained noise or individual-level differences
+
+# --------------------
+
+## Mean Squares (MS) and F-values: signal-to-noise strength
+## F = (variance explained by factor)/residual variance
+
+anova.wei
+anova.wei$`Mean Sq`[4] # Residual MS = 89.9 = "NOISE LEVEL"
+
+# Comparing MS values of factors to the noise level
+# Larval Host
+anova.wei$`Mean Sq`[1]
+anova.wei$`F value`[1]
+# => Differences between larval host groups are very large compared to within-group variability
+# => Strong evidence that adult weight differs across larval host treatments
+
+# Maternal Host
+# => No evidence that maternal host affects adult weight on its own
+
+# Interaction
+# => has small/marginal effect on adult weight
+
+# ===> Larval host = strongest predictor
+
+# --------------------
+# --------------------
+
+## SUMMARY
+
+# Estimates
+summary.wei <- summary(m.wei)
+summary.wei
+
+# Effect sizes etc
+sum(summary.wei$coefficients[2:4])+summary.wei$coefficients[1]
+sum(summary.wei$coefficients[2])+summary.wei$coefficients[1]
+sum(summary.wei$coefficients[3])+summary.wei$coefficients[1]
+sum(summary.wei$coefficients[2:4])/summary.wei$coefficients[1]
+
+# Group means
+model.tables(aov(m.wei), type = "means")
+
+# r2
+summary.wei$r.squared # 34.5% => to explain adult weight better, it would be good to adjust the model
+```
+
+## Results
+
+### Developmental Time
+
+::: {style="text-align: justify;"}
+The larval host plant is the strongest predictor for developmental time and explains about $64$ % of the variation. The differences between larval host groups are very large compared to within-group variability. The maternal host plant explains a smaller share of the variation the larval host plant (about $11$ %). The interaction between larval and maternal host plant is moderate (about $1.8$ %). Most of the remaining variation (about $23$ %) is unexplained noise or individual-level differences, which is within normal range for biological data. The resulting r-squared value for developmental time model is $77.3$ %. See Table 1.
+
+The highest difference in effect size was seen when both larval and maternal host $=$ *Barbarea vulgaris* and both larval and maternal host $=$ *Berteroa incana* with a difference of $+43$ % for *Berteroa incana*.
+
+Mean development was lowest with about 21.7 days when larval and maternal host $=$ *Barbarea vulgaris* and highest with about 31.1 days when larval and maternal host $=$ *Berteroa incana*. When larval and maternal host differed, developmental time was between 23.51 and 27.0 days. Both host species influence developmental time, and the combination magnifies the delay. See Figure 1.
+:::
+
+### Adult Weight
+
+::: {style="text-align: justify;"}
+The larval host plant accounts for about $33$ % and the maternal host plant accounted for less than $0.2$% in the variation of adult weight. While the maternal host plant almost has no impact on the variation in adult weight, the interaction between larval and maternal host plant explains about $0.8$ % of variation in adult weight. The majority of the variation (about $65$ %) in adult weight is explained by the unexplained noise or individual-level difference. The resulting r-squared value for the adult weight model is $34.5$ %. See Table 2.
+
+The highest difference in effect size was, as in the developmental model, when both larval and maternal host $=$ *Barbarea vulgaris* and both larval and maternal host $=$ *Berteroa incana* with a difference of $-22.9$ % for *Berteroa incana*.
+
+Mean adult weight was highest with about 65.4 grams when larval and maternal host $=$ *Barbarea vulgaris* and lowest with about 50.4 grams for larval and maternal host $=$ *Berteroa incana*. When larval and maternal host differed, adult weight was between 53.5 and 66.7 grams. See Figure 1.
+:::
+
+```{r}
+#| label: table_anova_dev
+#| tbl-cap: "Two-way ANOVA examining the effects of larval and maternal host plant on developmental time. The table presents degrees of freedom, sum of squares, mean sum of squares, and F-values for each main effect and their interaction."
+#| results: asis
+#| echo: false
+
+## ISSUES WITH **auto** CAPTIONS... 
+## Revisit for report no. 2 (!)
+
+## Results table for
+
+## (1) MODEL DEV
+# Create data frame from the ANOVA results
+anova.dev_tab <- data.frame(
+  Term = c("Larval host", "Maternal host", "Larval X Maternal host", "Residuals"),
+  "Degrees of Freedom" = anova.dev$Df, # column title (left) = data (right)
+  "Sum of Squares" = anova.dev$`Sum Sq`,
+  "Mean Sum of Squares" = anova.dev$`Mean Sq`,
+  "F-Value" = anova.dev$`F value`,
+  check.names = FALSE ## CRUCIAL, otherwise kable() will replace blank spaces with dots when it prints table
+)
+
+# Render the table for export
+kable(
+  anova.dev_tab,
+  digits = 1,    ## for decimal places
+  align = c("l", "c", "r", "r", "r") # left for term, center for Df, right for numbers
+)
+```
+
+```{r table_anova.wei, echo=FALSE}
+#| tbl-cap: "Two-way ANOVA examining the effects of larval and maternal host plant on adult weight. The table presents degrees of freedom, sum of squares, mean sum of squares, and F-values for each main effect and their interaction."
+#| results: asis
+#| 
+## (2) MODEL WEI
+# i.e. do the same as for model m.dev
+anova.wei_tab <- data.frame(
+  Term = c("Larval host", "Maternal host", "Larval X Maternal host", "Residuals"),
+  "Degrees of Freedom" = anova.wei$Df, # column title (left) = data (right)
+  "Sum of Squares" = anova.wei$`Sum Sq`,
+  "Mean Sum of Squares" = anova.wei$`Mean Sq`,
+  "F-Value" = anova.wei$`F value`,
+  check.names = FALSE ## CRUCIAL, otherwise kable() will replace blank spaces with dots when it prints table
+)
+
+kable(
+  anova.wei_tab,
+  #caption = "Two-way ANOVA results for Adult Weight", # css-style at start doc for left alignment of caption w/ kable()
+  digits = 1,    ## for decimal places
+  align = c("l", "c", "r", "r", "r") # left for term, center for Df, right for numbers
+)
+
+```
+
+```{r}
+#| include: false
+#| warning: false
+#| 
+# see: https://statsandr.com/blog/two-way-anova-in-r/
+
+with(
+  dat,
+  interaction.plot(LarvalHost, MaternalHost, DevelopmentTime),
+)
+
+with(
+  dat,
+  interaction.plot(LarvalHost, MaternalHost, AdultWeight)
+)
+```
+
+```{r, fig.height=5, fig.width=12, fig.cap="Interaction plot with the estimated means (± SE) of developmental time (left) and adult weight (right) for each combination of larval host plant and maternal host plant. Values were obtained from a two-way ANOVA testing the effects of larval host plant, maternal host plant, and their interaction.", echo=F}
+# par(mfrow = c(1, 2))   # 1 row, 2 columns, but does NOT work with ggplot...
+# instead: 
+# library(patchwork)
+
+## MODEL 1
+means.dev <- emmeans(m.dev, ~ LarvalHost * MaternalHost)
+means.dev_df <- as.data.frame(means.dev)
+#head(means.dev_df)
+
+plot.dev <- ggplot(means.dev_df, aes(x = LarvalHost, y = emmean,
+                   color = MaternalHost, group = MaternalHost)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE),
+                width = 0.2) +
+  labs(y = "Estimated Development Time",
+       x = "Larval Host",
+       color = "Maternal Host") +
+  theme(
+    text = element_text(size = 20)  # Increase all text sizes
+    ## WHY does it not work (text too small for my liking)
+  ) +
+  theme_bw()
+
+## MODEL 2
+means.wei <- emmeans(m.wei, ~ LarvalHost * MaternalHost)
+means.wei_df <- as.data.frame(means.wei)
+#head(means.wei_df)
+
+plot.wei <- ggplot(means.wei_df, aes(x = LarvalHost, y = emmean,
+                   color = MaternalHost, group = MaternalHost)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE),
+                width = 0.2) +
+  labs(y = "Estimated Adult Weight",
+       x = "Larval Host",
+       color = "Maternal Host") +
+  theme(
+    text = element_text(size = 20)  # Increase all text sizes
+  ) +
+  theme_bw()
+
+# Place both ggplot-Plots side by side (via patchwork library)
+  plot.dev + plot.wei
+```
+
+## Conclusion
+
+::: {style="text-align: justify;"}
+For both models, larval host was the strongest predictor for the dependent variable (developmental time or adult weight). In addition, the interaction between larval and maternal host plant explained some variation in both models. Further research is needed to understand the interactive effect of larval and maternal host plant on the developmental time and adult weight *Pieris rapae* better since the predictor "maternal host plant" by itself only had a small effect or no effect at all.
+:::
+
+## R-Code
+
+See Quarto (.qmd) version of this document.

@@ -1,0 +1,636 @@
+---
+title: "BASICS: Programming & Plotting (BIOS13)"
+author: "Pauline"
+format: html
+---
+
+# BASICS: Programming & Plotting
+
+## 2025-11-03 Basic programming
+
+### Exercises
+
+##### Lecture
+
+##### Ex. 1-29
+
+```{r}
+## I - BASIC EXERCISES
+
+# Eliminate all objects that were present in the environment
+rm(list = ls())
+
+
+# Check objects in the environment
+goats <- 8 # test vector
+
+ls()
+objects()
+
+
+# Print results
+cat("Number of goats = ", goats, "\n") #This will result in printing the value of lions
+                             #whenever I source the script.
+                             #including "\n" within cat() is used to tell R that 
+                             #next time it prints something it has to be in a 
+                             #separate line 
+
+
+# Name attributes
+# names(), print(), unname()
+names(goats) <- "The following goats have been counted this year" 
+print(goats)
+names(goats)
+unname(goats)
+
+
+# Creating vectors
+# c(), seq() or rep()
+seq(11, 27, length = 23)
+seq(0, 300, by = 3)
+seq(8, -1)
+
+rep(2:3, 3)
+
+u <- seq(5, 100, by = 5)
+u[c(3, 7)] <- 0 #you can multi-index by using a vector, in this case elements 3
+                # and 7 by creating a vector c(3, 7) containing these numbers
+u[u > 50] <- -3 #note here how I'm using u > 50 to index all values above 50
+u <- u + 7
+print(u)
+
+
+
+
+## II - WRITING SCRIPTS
+
+# Designated folder to save scripts (functions)
+# Set working directory
+# example: setwd("~/Desktop/Random PhD/BIOS13_HT2021")
+# manually: session > set working directory > choose directory
+
+setwd("G:/Meine Ablage/LU_courses_2025/BIOS13 Biological Modelling/scripts_BIOS13")
+
+
+
+# (20)
+# readline(), cat()
+name <- readline("Write your name:")
+# ==> Write name into console
+cat('Hello ', name, '!\n', sep='') # the sep='' option prevents spaces between parts
+
+
+
+# (21)
+# Modify the script above such that only users with names beginning with J are greeted.
+
+# a) course solution:
+if ( substr(name,1,1)=='J') {
+cat('Hello ', name, '!\n', sep='') # the sep='' option prevents spaces between parts
+}
+
+# b) my solution:
+if(substr(name,1,1) == "J") {
+  cat('Hello', name, '!')
+  } else {
+    cat('Goodbye!')
+}
+
+
+
+# (22)
+F <- readline("What is today's temperature in Fahrenheit?")
+# ==> write in console
+Celsius <- (as.numeric(F) - 32)/1.8
+Celsius
+cat(F, "Fahrenheit equals", Celsius, "Celsius")
+
+
+
+# (23)
+# Input 5 numbers, print the largest and smallest one.
+# scan(nmax())
+print("Enter 5 numbers!")
+numbers <- scan(nmax=5)
+# ==> need to write five numbers into the console
+cat('The largest number is', max(numbers), '\n')
+cat('The smallest number is', min(numbers), '\n')
+
+
+
+# (24)
+# round() values to the nearest integer
+# plot original and rounded values in the same plot
+v <- seq(1,200,length=15)
+v.r <-round(v)
+
+plot(v)     # plot with single input uses index as x-values
+lines(v.r)   # adds v2 as a line in the already existing plot
+
+
+
+# (25)
+# RANDOM WALK
+# Definition of a random walk: 
+# x[1] = 0
+# x[i+1] = x[i] + rnorm(1)
+# Task: Write a script that inputs the length of the walk, 
+
+# course solution:
+
+length_of_walk <- as.numeric(readline("Type the length of a walk: ")) # i.e. how many steps
+# generates a sample time series, 
+
+# Start with a vector of zeros with the RIGHT LENGTH (!!!)
+x <- rep(0,length_of_walk)
+# for-loop to generate the walk:
+for (i in 1:(length_of_walk-1) ) {
+  x[i+1] <- x[i] + rnorm(1)
+}
+# and plots it as a solid line
+plot(x,type='l')
+
+# Extra: generate 10 sample time series and plot them all in the same graph
+# Run the same for-loop 9 more times:
+for (j in 1:9) { # remember to use another loop variable!
+  # Generate a new walk:
+  for (i in 1:(length_of_walk-1) ) {
+    x[i+1] <- x[i] + rnorm(1)
+  }
+  # and add it to the graph:
+  lines(x,type='l')
+}
+# One problem here is that the last 9 walks may go outside the range of the first one,
+# and therefore outside the range of the graph. If you wish, work out a solution to that.
+
+
+
+
+# (26)
+# Write a script that inputs two vectors of length 3 and prints a new vector 
+# that alternatingly takes elements from the first two, ´
+# e.g. [5,6,10], [1,2,3] → [5,1,6,2,10,3]
+
+v1 <- c(5,6,10)
+v2 <- c(1,2,3)
+# create a vector of zeroes and of the correct length (length(v1+2))
+v3 <- rep(0,6)
+
+# course solution:
+
+# use for-loop to fill in values
+# Notice that the loop-variable i only takes the 2nd, 4th, 6th value
+for (i in seq(2,6,by=2)) {
+  v3[i-1] <- v1[i/2]
+  v3[i] <- v2[i/2]
+}
+cat('The resulting vector is:', v3, '\n')
+
+
+
+# (27) Modify the script above - from (26) - to first ask for the length of
+# the vectors (which can be any integer>0 but ≤10)
+  
+  
+# (28)
+# Write a script that inputs a line of text (in English) and prints all 
+# vowels in the text in the order they appear.
+# Hint: The %in% operator is useful here. The command "# a %in% v"
+# tests whether the value a occurs in the vector v (and then returns 
+# a logical vector with TRUE or FALSE values). 
+
+# Example:
+#  if( a %in% v ) { 
+#    # do something
+#  }
+  
+  
+# (29) 
+# Write a guessing game where the user has to guess a secret number 
+# (between 1 and 20, use sample.int(20,1)). After every guess the program 
+# tells the user whether their number was too large or too small. At the 
+# end the number of tries needed should be printed
+
+s.no <- sample.int(20,1)
+s.no
+
+
+
+```
+
+### Questions
+
+-   (How can I set my working directory (setwd()) to an external harddrive? (googledrive linked to desktop) -- might be working, I just always get a note when I run setwd(G: ...))
+
+-   (24/25/etc) Why does lines() after doing a plot not work in Quarto but in a normal R-script?
+
+### Review
+
+-   Exercise 25/Random walk Exercise 26 -- is understandable, but grasp logic better
+
+-   !!! Exercises 27-29 not done and unreviewed =\> any question for this afternoon session?
+
+    ------------------------------------------------------------------------
+
+    ## 2025-11-04 Structured Programming and Plotting
+
+## Exercises
+
+#### Lecture
+
+##### Structured Programming
+
+```{r}
+## lecture no. 17 --testing the function "reverse"
+```
+
+##### Plotting
+
+```{r}
+## Basic plotting
+
+# plot(x,y, type=, lty=, col=, xlab=, ylab=)
+# lines
+# points
+
+## Several plots in the same window
+# x <- par(mfrow=c(1,2))
+# par(x)      # restores old setting
+
+# mfcol       # to plot column by column
+
+
+
+## Example 1: lecture slide 21
+x <- seq(0,10,by=2)
+y <- sin(x)
+plot(x,y,type='l')    # output is a very "choppy" sinus-curve
+
+
+## Example 2: lecture slide 22
+x <- seq(-10,10,by=0.2)
+
+myfun <- function(x){
+  if(x<0){
+    y <- sin(x)+x
+  }else{
+    y <- 1-cos(x)
+  }
+  return(y)
+}
+
+y <- rep(0,length(x))
+for(i in 1:length(x)){
+  y[i] <- myfun(x[i])
+}
+plot(x,y,type='l')
+
+
+## Example 3: Plotting in 3D
+myfun <- function(x,y){
+  z <- sin(x) - cos(y)
+  return(z)
+}
+
+# outer (R function)
+# idea is to generate a whole matrix of function values corresponding to 
+# underlying x and y coordinates
+# matrix = z 
+
+x <- -1:1
+y <- -1:1
+z <- outer(x,y,myfun)  #z[i,j]=myfun(x[i],y[i])
+
+# Plotting
+# image, contour, persp
+
+image(x,y,z)
+contour(x,y,z)
+persp(x,y,z)
+
+
+
+## Packages for plotting
+
+library(ggplot2)
+library(ggplot2)
+library(rgl)      #3D plots
+```
+
+#### Exercises
+
+##### Ex. 1
+
+```{r}
+## (1) 
+## Write a mymax function that takes two input values and returns the largest of the two. 
+larger <- c()
+larger
+
+a <- rnorm(1)+10
+b <- rnorm(1)+10
+a
+b
+
+mymax <- function(a,b) {
+  if (a>b) larger <- a else larger <- b
+  return(larger)
+}
+
+mymax(a,b)
+mymax(10,100)
+
+```
+
+##### Ex. 2
+
+```{r}
+## (2) Write a function that calculates the weighted sum of an input vector. 
+## The second argument to the function should be the weights, one per 
+## element of the first vector.
+## Example: If the input is v = c(3, 5, -1) and w = c(1, 2, 1), then the 
+## output should be calculated as 1*3 + 2*5 + 1*(-1) = 12 
+## Hint: a for loop will work for sure. Or is there a simpler way of doing 
+## this perhaps?
+
+v <- c(3,5,-1)
+w <- c(1,2,1)
+v
+w
+
+length(v)
+
+
+
+weightedsum <- function(v,w) {
+  wsum <- 0     # empty vector, not NULL
+  for (i in 1:length(v)) {
+    result <- v[i]*w[i]
+    wsum <- wsum + result
+    # alternatively: within for loop: use sum(wsum) to get a result
+  }
+  return(wsum)
+}
+
+weightedsum(v,w)
+
+      ## unsure how to make it simpler WITHOUT for-loop???
+```
+
+##### Ex. 3
+
+```{r}
+## (3) 
+## Leonardo of Pisa (about 1170 - 1250 AD) is often regarded as Europe’s first 
+## mathematician after the dark ages. Under the pseudonym Fibonacci he wrote Liber 
+## Abaci (Book of Calculation), where he strongly advocated the use of the 
+## Hindu-Arabic number system, which we use today. He also presented what is possibly 
+## the first population dynamic model, the Fibonacci sequence, which is an infinite 
+## sequence of numbers. The first two numbers are both 1. All the following numbers 
+## are calculated as the sum of the two previous. Thus the sequence starts: 1 1 2 3 5 8 11 ... 
+## Fibonacci thought of it as a model of rabbit population growth...
+## Note: This sequence was known in India before, but Fibonacci was first (I think) 
+## to give it a biological interpretation. Now:
+## Write a function which takes an input variable n, calculates the n first Fibonacci 
+## numbers, and plots them. (no return values) 
+## Hint: A for loop here that depends on positions i-1 and i-2 may be useful for this.
+
+
+fibonacci <- function(x){
+  n <- vector("numeric", x)
+  for(i in 1:x){
+  if (i<=2) n[i] <- 1 else n[i] <- n[i-2]+n[i-1]
+  }
+  return(n)
+}
+      ### How does it work without return()???
+
+fib20 <- fibonacci(20)
+fib20
+fiblength <- seq(1,length(fib20),by=1)
+
+# Plot
+# x = nth fibonacci value
+# y = fibonacci value
+
+plot(fiblength,fib20)
+
+
+
+## (3 EXTRA)
+## Extra: Extend the function above to also plot C^i/sqrt(5), where C is the Golden 
+## Ratio = (1+sqrt(5))/2 and i is the index in the sequence (the x-coordinate). 
+## This function is very close to the Fibonacci sequence at higher values of i. 
+
+# solution from course WITH extra
+
+Fibonacci <- function(n) {
+  # start with a sequence of zeros:
+  fib <- rep(0,n)
+  # the first two should be 1:
+  fib[1:2] <- 1
+  # calculates the n first Fibonacci numbers
+  for (index in 3:n) {
+    fib[index] <- fib[index-2] + fib[index-1]
+  }
+  #, and plots them. (no return values)
+  plot(1:n,fib,type='b')
+  
+  #Extra: Extend the function above to also plot C^i/sqrt(5), 
+  # where C is the Golden Ratio = (1+sqrt(5))/2 
+  # and i is the index of the sequence (the x-coordinate). 
+  # This function is very close to the Fibonacci sequence at higher values of i.  
+  C <- (1+sqrt(5))/2
+  # C^(1:n) will produce a vector with values C^1, C^2, etc.:
+  fib2 <- C^(1:n)/sqrt(5)
+  lines(1:n,fib2,col='red')
+}
+Fibonacci(8)
+```
+
+##### Ex. 4
+
+```{r}
+##(4) Write a plotmax function that 
+## a.	takes an input parameter n 
+## b.	generates a random vector of length n (runif(n)) 
+## c.	plots the vector as a blue line 
+## d.	highlights local maxima with red crosses 
+## e.	returns two vectors in a list. The first vector contains the indices 
+## (positions) and the second vector contains the values of the local maxima. 
+## Tips: Solve the points a-e one by one. Make sure your solution works before 
+## you move on to the next. Divide and conquer!
+
+  ## In e), you can create an empty vector using c() the empty vector can contain either the index of the local maximum or the value of the local maximum, I’d suggest you create one vector for each:
+  ## v <- c() 
+  ## That vector can then grow using the c() command repeatedly: 
+  ## v <- c( v, newvalue)
+
+xtest <- runif(20)
+xtest
+max(xtest)
+
+plotmax <- function(n){
+  y <- runif(n)         # runif = uniform distribution of n observations
+  x <- seq(1,n,by=1)
+  plotxy <- plot(x,y,type='l',col='blue')
+  points(max(x),y=NULL, col='red',pch=3) # What about y?
+}
+
+plotmax(20)
+    
+      ### HOW to plot local maxima? ###
+      ### HOW to return two vectors in list with indices and local maxima?
+
+
+# course solution:
+
+#a. takes an input parameter n
+plotmax <- function(n) {
+#b. generates a random vector of length n (runif(n))
+  v <- runif(n)
+#c. plots the vector as a blue line
+  plot(1:n,v,type = 'l',col='blue')
+  
+#d. highlights local maxima with red crosses
+  v_i <- c() # for the indeces
+  v_v <- c() # for the values
+  for(position in 2:(n-1)) {
+    if(v[position-1]<v[position] && v[position]>v[position+1]) {
+      points(position,v[position],pch=4, col='red')
+#e. returns two vectors in a list. 
+# The first vector contains the indices (positions) 
+# and the second vector contains the values of the local maxima.
+# start with two empty output vectors:
+      # add to output vectors:
+      v_i <- c(v_i, position)
+      v_v <- c(v_v, v[position])
+    }
+  }
+  return(list(indeces=v_i, values=v_v))
+}
+
+plotmax(15)
+```
+
+##### Ex. 5
+
+```{r}
+## (5) 
+## Write a function is_palindrome() that tests whether a string (input parameter) 
+## is a palindrome (the same thing backwards) and returns TRUE or FALSE.
+  #> is_palindrome("anna") 
+  #[1] TRUE
+  #> is_palindrome("jack")
+  #[1] FALSE
+## Hint: you’re comparing first with last letter, then second with second-to-last, 
+## then third to third-to-last, etc.
+
+testname <- readline("What name do you want to test?:")
+# >>> write name into console
+testname
+
+substr(testname,1,1)  # substracts the first letter from the name
+substr(testname,1,1)
+
+nchar(testname)         # returns the number of characters from the name
+
+palindrome <- function(string) {    # key to put "string" here!
+  #nameback <- 0
+  #palindromeresult <- c()
+  for(char_index in nchar(t):1){             # key to also "put char_index" here!
+    result <- substr(string, i,i)
+    nameback <- nameback + result
+    # solution uses: nchar(string) - char_index + 1
+  }
+  if (testname == nameback) palindromeresult <- T else palindromeresult <- F
+  return(palindrome)
+}
+
+palindrome(string=c("Pauline)"))
+```
+
+##### Ex. 6
+
+```{r}
+## (6) 
+## Write a function that merges two sorted vectors (input variables) into a new 
+## sorted vector (return value). Example: [1,4,6],[2,3,5] → [1,2,3,4,5,6].
+## Tips! Solve the simplest of cases first, such as the input of two numbers 
+## instead of vectors: 4, 5 → [4,5]. Next, solve the case with a fixed length of 
+## the vectors (length 2 or 3, for example). Finally, allow any length of the 
+## two input vectors (they do not have to be the same length). Make sure you have 
+## a working solution before you move on to the next step. 
+
+v1 <- c(1,2,3)
+#v2 <- c(4,5,6)
+v2 <- c(9,10,11,12,13)
+v1
+v2
+
+?sort
+v3 <- c(v2,v1)
+v3
+
+v4 <- sort(v3, decreasing=F)
+v4
+
+        ## NOT a loop, but a very simply solution that works :-) ##
+```
+
+Ex. 7
+
+```{r}
+## (7) 
+## Figure out how to create subplots, i.e. how to plot several plots in the same 
+## window (see the lecture notes). 
+
+x <- c(1,2,3,4)
+y <- c(1,4,5,7)
+
+plot(x,y)
+
+op <- par(mfrow=c(1, 2))  # lecture slide no. 20:
+                    # The function par() is used to change graphics settings. 
+                    # Here, we want two figures in the same window organized 
+                    # in one row and two columns. 
+                    # We assign the return value of par() to an object op. By 
+                    # doing so the "old par" setting is saved and we can restore 
+                    # the plotting frame to normal afterwards (see last row in 
+                    # the following chunk of code)
+
+mfcol               # to plot column by column
+par(op) # restore old settings (otherwise, all following plots will be in a 1x2 arrangement)
+par(mfrow=c(1, 1))
+
+        ## WHY does the rest par(op) NOT work? ##
+```
+
+#####Ex. 8
+
+```{r}
+## (8) 
+## Play with other plot commands! Try polygon, image, contour, persp, or try out 
+## the ggplot2 commands! 
+library(ggplot2)
+
+# sample datasets
+library(swirl)
+
+library(sampledatasets)
+data(arbuthnot_tbl)       # dataset: Male and female births in London
+data <- arbuthnot_tbl
+data
+
+colors()
+plot(data$year, data$boys, pch=20, type='p', lty='twodash', col='violetred1',
+     xlab='Year', ylab='No. males born', title='Male birth in London')
+```
+
+### Questions
+
+-   xxx
+
+### Review
+
+-   lecture no. 17 --testing the function "reverse"

@@ -1,0 +1,358 @@
+---
+title: Dynamic Systems 1
+subtitle: BIOS 13
+author: Pauline Mergel
+date: 2025-11-18
+output: pdf_document
+fig_caption: yes
+pandoc_args: [--wrap=none]
+---
+
+```{r setup, include=T}
+knitr::opts_chunk$set(echo = TRUE)
+
+## Sets global chunk options for all R code chunks in the document
+
+# echo = TRUE tells knitr to show the R code in the rendered output.
+# So every code chunk will display its code unless you override it locally with echo = FALSE
+
+# include = FALSE (in the chunk header) means:
+# The setup chunk itself will not appear in the final output — neither its code nor its results are shown.
+# But the code does run, so it can set options like this.
+```
+
+## Packages
+
+```{r}
+#| echo: false
+#| eval: false
+
+install.packages(c("tidyverse", "tinytex"))
+
+#tinytex::install_tinytex()
+```
+
+```{r}
+#| include: false
+#| warning: false
+
+library(tidyverse)
+library(tinytex)
+```
+
+# Dynamic Systems
+
+## Exercises 1
+
+Logistic equation: $dn/dt = r0* n * (1 - n / K)$
+
+### (1) Plot: Logistic growth equation
+
+Plot the growth function (logistic equation) **dn/dt = r0\* n \* (1 - n / K)** against population size **n**.
+
+Define values r0 and K in the beginning of the script (so they can be easily changed).
+
+```{r}
+# Script plotting the logistic growth function 
+# Key model parameters: 
+r0 = 1 # intrinsic growth rate 
+K = 100 # carrying capacity
+
+n = seq(0, 150, by = 1)
+
+dndt = r0 * n * (1 - (n/K))
+
+# Saving a base R plot
+# Function() is necessary to be able to call on them later (!!)
+# Any additions (here abline) need to also be saved inside the function
+plot_dndt <- function() {
+  plot(n, dndt, type = "l", ylim=c(-20, 30), xlim=c(0,150))
+  abline(h = 0)
+}
+
+plot_dndt()
+```
+
+### (2) Plot: Mathematical solution
+
+The logistic equation has an exact mathematical solution given by:
+
+$n(t) = K / (1 + (K/n(0) - 1) * exp(-r0 * t))$
+
+```{r}
+# Define new variables
+n0 =1
+t = seq(1, 20, by = 1)
+
+# All variables used for mathematical solution n(t)
+K
+n0
+r0
+t
+
+# Pseudocode for function(t):
+# n[1:t] = K / (1 + (K/n[1] - 1) * exp(-1*r0 * t))
+
+# Function n(t)
+n_t <- K / (1 + (K/n0 - 1) * exp(-1*r0 * t))
+n_t
+
+plot_n_t <- function() {
+  plot(t, n_t, type = "l",
+     ylim = c(0,100), xlim = c(0,20),
+     ylab = "n", xlab = "time")
+  
+}
+plot_n_t
+```
+
+```{r}
+## Plotting both plots (from (1) and (2)) next to each other: 
+par(mfrow = c(1, 2))
+
+# Call the functions with the plots incl. abline
+# That is why you have/need the brackets () behind the fct name
+plot_dndt()
+plot_n_t()
+```
+
+##### (REVIEW) EXTRA
+
+Can you see that n -\> K as t -\> infinity?
+
+### (3) (REVIEW) Numerical test of the solution
+
+Make a numerical test of the solution. In other words, calculate $Δn/Δt$ for different points on the curve in exercise (2).
+
+Make a suitable plot to compare the result to the correct values given by the model:
+
+$dn/dt = r0 * n * (1 - n/K)$
+
+The built-in R-function *diff* may come in handy. *diff(x)* calculates the difference between consecutive values of a vector *x*. Try for example *diff(c(2,3,7))* or something similar.
+
+```{r}
+## This code is not working
+## See next coding section for solution
+
+
+
+# HOW does the function diff() work? What does it do?
+diff(c(2, 3, 7)) 
+# = 1, 4 
+# b/c 3-1=1 and 7-3=4
+
+test = c(2,4,8,16,32,64)
+diff(test)
+
+
+# lag = an integer indicating which lag to use
+# differences = an integer indicating the order of the difference
+diff(test, lag=1)
+diff(test, lag=1, differences=2)
+diff(test, lag=1, differences=4)
+diff(test, lag=2)
+
+# Model parameters
+r0 = 1 # intrinsic growth rate 
+K = 100 # carrying capacity
+n0 = 1 # initial population size
+n = seq(1, 150, by = 1) # population size across time
+delta_t = 0.1 # time step
+t = seq(0, 20, by = delta_t)# time: seq(start time, end time, by = time step)
+                        # start time = 0
+                        # end time = 20
+                        # time step = 0.1 BECAUSE we want a VERY SMALL time step
+# t = 0.0, 0.1, 0.2, ..., 19.9, 20.0
+# length of t = 201
+
+# Do t and n_solution have the same length?
+isTRUE(length(t) == length(n_solution)) ## YES
+
+# ----------
+
+# Numerical solution (as in (2), but with UPDATED t (time series))
+# Will become x-axis value for the plot below
+num_solution <- K/(1+(K/n0-1)*exp(-r0*t))
+
+# ----------
+
+# Recall the logistic model (from (1))
+# dndt = r0 * n * (1 - (n/K))
+
+# Write a function
+# for each delta_n over delta_t
+
+# Numerical approximation
+n_solution
+delta_t
+diff(n_solution)
+diff(t)
+num_approx = diff(n_solution)/diff(t) # diff(t) == delta_t == 0.1 time steps
+num_approx[1]
+num_approx[2]
+
+# -----------
+
+### CODE BELOW IS PRIMARILY FROM THE SOLUTION !!!!! ###
+
+length(num_solution)
+length(num_approx)
+
+num_solution = num_solution[1:40] # -1 (substract last data point)
+
+isTRUE(length(num_solution) == length(num_approx))
+
+# plot(x,y)
+# x = numerical solution
+# y = numerical approximation
+plot(num_solution, num_approx, type='l', col='red', xlab='n', ylab='dn/dt')
+
+# Compare numerical derivative with the model:
+dndt_model <- r0*n_plot*(1-n_plot/K)
+# plot==lines(x,y)
+# x = numerical solution
+# y = logisitic dndt model from (1)
+lines(num_solution, dndt_model, col='black', lty='dashed')
+
+legend('topleft', legend=c('numerical derivative','exact values'), col=c('red','black'), lty=c('solid','dashed'))
+```
+
+##### Solution code
+
+```{r}
+# Solution code for (3)
+
+
+
+# Make a numerical test of the solution to the logistic growth equation. 
+# In other words, calculate Δn/Δt for different points on the curve in exercise 2. 
+# Make a suitable plot to compare the result to the correct values given by the model
+# ( dn/dt=r_0*n(1-n/K) ). 
+
+# Key parameters:
+r0 <- 1 # intrinsic growth rate
+K <- 100 # carrying capacity
+n0 <- 1 # starting population size for numeric solution
+delta_t <- 0.1 # Fixed time-step
+
+# A vector of t-values with the given step-size
+t <- seq(0, 20, by=delta_t)
+
+# The corresponding solution n(t):
+n_solution <- K/(1+(K/n0-1)*exp(-r0*t))
+
+# A numerical approximation of dn/dt:
+dndt_num <- diff(n_solution)/diff(t) # equivalent: diff(n_solution)/delta_t
+# Note: The length of dndt_num is one less than the length of n_solution
+
+# Plot dn/dt against n:
+n_plot <- n_solution[-length(n_solution)] # skip last point
+plot(n_plot, dndt_num, type='l', col='red', xlab='n', ylab='dn/dt')
+
+# Compare numerical derivative with the model:
+dndt_model <- r0*n_plot*(1-n_plot/K)
+lines(n_plot, dndt_model, col='black', lty='dashed')
+
+legend('topleft', legend=c('numerical derivative','exact values'), col=c('red','black'), lty=c('solid','dashed'))
+```
+
+### (4) (REVIEW) Numerical solution to logistic equation
+
+Finally, it is time to solve the logistic equation numerically. Use the procedure outlined in the lecture:
+
+i\) Start by setting n = $n_0$, 𝑡 = 0\
+ii) Choose a small Δ𝑡\
+iii) Calculate 𝑓(𝑡, n)\
+iv) Calculate Δ𝑥 = 𝑓(𝑡, n)Δt\
+v) Update n ← n + Δ𝑥, 𝑡 ← 𝑡 + Δ𝑡\
+vi) Repeat from iii), until reaching final t.
+
+Does your solution match the analytic solution plotted in exercise 2?
+
+```{r}
+# With help of the solution
+
+
+
+# Key parameters:
+r0 <- 1 # intrinsic growth rate
+K <- 100 # carrying capacity
+n0 <- 1 # starting population size for numeric solution
+delta_t <- 0.1 # Fixed time-step
+t <- seq(0, 20, by = delta_t) # time 0 = start, 20 = end, with 0.1 = timestep
+
+# ----------
+
+# We want a new vector "numerical solution" (num_sol) as output
+# First, we need to create it as an empty vector
+# This means: empty vector with the same length as our time series t
+num_sol = rep(0, length(t)) # == 201 values
+
+# We want the first value of num_sol = n0
+# Currently: num_sol[1] = dummy value 0
+num_sol[1] <- n0
+
+# BUT why do we also set n = n0 = 1?
+# in (1): n was a sequence from 0 to 150, 
+# so we had a starting population of zero
+n = n0
+
+
+# ----------
+# ----------
+# ----------
+
+# We want a value for each time step t_i
+# Only known value is for t=1
+
+for(t_i in 2:length(t)){
+  # Calculate f(t, n) ???
+  # Logistic equation (from (1))
+  # dn/dt = f(n)
+  dndt = r0 * n * (1 - (n/K))
+  
+  # Calculate delta_n = f(t,n) * delta_t
+  delta_n = dndt * delta_t
+  
+  # Update n <- n + delta_n
+  # for each iteration, n becomes +0.1 time steps larger
+  n <- n + delta_n
+  
+  # Update t <- t + delta_t
+  # Why do we not do that in the function???
+  
+  # store solution
+  n_solution[t_i] <- n
+}
+
+plot_num_solution <- function() {
+  plot(t, n_solution, type = "l")
+}
+
+# ----------
+
+# Does the numerical solution match the analytic solution plotted in exercise 2?
+n_analytical <- K/(1+(K/n0-1)*exp(-r0*t))
+
+plot_num_solution_comp <- function() {
+  plot(t, n_solution, type = "l", col="red",
+       xlab='time, t', ylab='n(t)', main='Logistic growth')
+  lines(t, n_analytical, col="turquoise")
+}
+
+plot_num_solution_comp()
+```
+
+### (5) (REVIEW)
+
+(advanced)
+
+Re-write the program in exercise 4 to a general ode-solver, taking the function 𝑓(𝑡, 𝑥) as an input parameter. Test it with functions with known solutions, such as exponential or logistic growth. Another possible test is a function 𝑓(𝑡, 𝑥) = cos (𝑡) with solution 𝑦 = sin(𝑡) + 𝑦(0) (can you see why?).
+
+```{r}
+##
+```
+
+---
+
+## Exercises 2
